@@ -1,0 +1,61 @@
+# eng.config.yaml — Default configuration for .eng projects
+project:
+  name: "My Application"
+  version: "1.0.0"
+  description: "A web application built with .eng"
+
+compiler:
+  target: "react"
+  # target: "laravel-blade"
+  # target: "vue"
+  # target: "svelte"
+  # target: "html"
+  # target: "nextjs"
+  # target: "nuxt"
+  # target: "angular"
+
+  llm:
+    provider: "anthropic"
+    model: "claude-sonnet-4-20250514"
+    api_key_env: "ANTHROPIC_API_KEY"
+
+  output:
+    directory: "./dist"
+    clean_before_build: true
+
+  css:
+    framework: "tailwind"
+    version: "3"
+
+  typescript: false
+
+theming:
+  primary: "#3B82F6"
+  secondary: "#6366F1"
+  success: "#10B981"
+  warning: "#F59E0B"
+  danger: "#EF4444"
+  info: "#06B6D4"
+  font_heading: "Inter"
+  font_body: "Inter"
+  border_radius: "8px"
+  spacing_unit: "4px"
+
+routes:
+  base_path: "/"
+  not_found: "pages/404.eng"
+  error: "pages/500.eng"
+
+api:
+  base_url: "/api"
+  auth_header: "Authorization"
+  auth_prefix: "Bearer"
+  timeout: 30000
+
+environment:
+  development:
+    api_base_url: "http://localhost:8000/api"
+    debug: true
+  production:
+    api_base_url: "https://api.myapp.com"
+    debug: false

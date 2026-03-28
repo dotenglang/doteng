@@ -1,0 +1,138 @@
+{
+  "name": "ENG",
+  "scopeName": "source.eng",
+  "fileTypes": ["eng"],
+  "patterns": [
+    { "include": "#frontmatter" },
+    { "include": "#comment" },
+    { "include": "#doc-comment" },
+    { "include": "#variable" },
+    { "include": "#string" },
+    { "include": "#number" },
+    { "include": "#boolean" },
+    { "include": "#keyword-control" },
+    { "include": "#keyword-compound" },
+    { "include": "#keyword-operator" },
+    { "include": "#colon-block" }
+  ],
+  "repository": {
+    "frontmatter": {
+      "name": "meta.frontmatter.eng",
+      "begin": "\\A(---\\s*$)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.frontmatter.begin.eng" }
+      },
+      "end": "^(---\\s*$)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.frontmatter.end.eng" }
+      },
+      "patterns": [
+        { "include": "#frontmatter-body" }
+      ]
+    },
+    "frontmatter-body": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.yaml",
+          "match": "#.*$"
+        },
+        {
+          "match": "^\\s*(type|name|description|props|route|extends|title|auth|role|tags|required|default)\\s*(:)",
+          "captures": {
+            "1": { "name": "entity.name.tag.eng" },
+            "2": { "name": "punctuation.separator.key-value.eng" }
+          }
+        },
+        {
+          "match": "^\\s*-\\s*(name|type|required|default)\\s*(:)",
+          "captures": {
+            "1": { "name": "entity.name.tag.eng" },
+            "2": { "name": "punctuation.separator.key-value.eng" }
+          }
+        },
+        {
+          "name": "support.type.eng",
+          "match": "\\b(string|number|boolean|array|object|image|date|any|component|page|layout|fragment|modal)\\b"
+        },
+        {
+          "name": "constant.language.eng",
+          "match": "\\b(true|false|null)\\b"
+        },
+        {
+          "name": "constant.numeric.eng",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        },
+        {
+          "name": "string.quoted.double.eng",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.eng",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "keyword.other.frontmatter-field.eng",
+          "match": "^\\s*\\w[\\w-]*(?=\\s*:)"
+        }
+      ]
+    },
+    "comment": {
+      "name": "comment.line.double-dash.eng",
+      "match": "--.*$"
+    },
+    "doc-comment": {
+      "name": "comment.block.documentation.eng",
+      "begin": "^---\\s+doc\\s*$",
+      "end": "^---\\s*$"
+    },
+    "variable": {
+      "name": "variable.other.eng",
+      "match": "\\{[^}]+\\}",
+      "captures": {
+        "0": { "name": "variable.other.readwrite.eng" }
+      }
+    },
+    "string": {
+      "name": "string.quoted.double.eng",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "variable.other.interpolated.eng",
+          "match": "\\{[^}]+\\}"
+        },
+        {
+          "name": "constant.character.escape.eng",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.eng",
+      "match": "\\b\\d+(\\.\\d+)?(px|rem|em|vh|vw|ms|s|%)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.eng",
+      "match": "\\b(true|false|null|today|now)\\b"
+    },
+    "keyword-compound": {
+      "name": "keyword.control.eng",
+      "match": "^\\s*(Else\\s+If)\\b"
+    },
+    "keyword-control": {
+      "name": "keyword.control.eng",
+      "match": "^\\s*(Import|Place|Slot|Fill|Create|Show|Group|Hide|Loop|If|Else|Switch|Case|Default|Set|Bind|Fetch|Compute|Store|Update|Watch|Use|On|Navigate|Submit|Emit|Toggle|Open|Close|Prevent|List|Table|Image|Link|Icon|Markdown|Input|Textarea|Select|Checkbox|Radio|Upload|DatePicker|TimePicker|Style|Theme|Responsive|Animate|Debug|Comment|TODO|Include|Handle|Call|Refresh|Clear|Reset|Retry|When|While|Listen|Scroll|Confirm|Delete|Validate)\\b"
+    },
+    "keyword-operator": {
+      "name": "keyword.operator.eng",
+      "match": "\\b(is\\s+not\\s+empty|is\\s+empty|has\\s+items|is\\s+not\\s+logged\\s+in|is\\s+logged\\s+in|is\\s+greater\\s+than|is\\s+less\\s+than|is\\s+more\\s+than|is\\s+fewer\\s+than|is\\s+at\\s+least|is\\s+at\\s+most|is\\s+between|is\\s+one\\s+of|is\\s+not\\s+one\\s+of|is\\s+valid|is\\s+before|is\\s+after|does\\s+not\\s+equal|does\\s+not\\s+exist|is\\s+not|is\\s+true|is\\s+false|starts\\s+with|ends\\s+with|contains|equals|exists|and|or|not)\\b"
+    },
+    "colon-block": {
+      "name": "punctuation.section.block.eng",
+      "match": ":\\s*$"
+    }
+  }
+}

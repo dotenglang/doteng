@@ -1,0 +1,21 @@
+---
+type: component
+name: HeroSection
+description: "Landing page hero with headline and CTA"
+props:
+  - name: headline
+    type: string
+    default: "Build faster with .eng"
+  - name: subtitle
+    type: string
+    default: "English as a Programming Language"
+---
+
+Create a full-width section with large vertical padding, centered text:
+  Show {headline} as a large heading, font size 4rem
+  Show {subtitle} as paragraph text, muted color, max width 600px, centered
+  Create a button row with gap medium, centered, margin top large:
+    Create a button "Get Started" style primary, size large:
+      On click: Navigate to "/docs"
+    Create a button "View on GitHub" style secondary outline, size large:
+      Link to "https://github.com/eng-lang" opens in new tab

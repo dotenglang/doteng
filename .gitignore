@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.eng-cache/
+.env
+api_keys.txt
+*.log
+.DS_Store
+Thumbs.db
+projects/*/dist/
+projects/*/.eng-cache/
+projects/*/.env
+projects/*/node_modules/

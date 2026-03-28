@@ -1,0 +1,33 @@
+{
+  "name": "eng-language",
+  "displayName": "ENG Language Support",
+  "description": "Syntax highlighting for .eng (English as a Programming Language)",
+  "version": "1.0.0",
+  "publisher": "llmlang",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#0f0c29",
+    "theme": "dark"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "eng",
+        "aliases": ["ENG", "eng", ".eng"],
+        "extensions": [".eng"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "eng",
+        "scopeName": "source.eng",
+        "path": "./syntaxes/eng.tmLanguage.json"
+      }
+    ]
+  }
+}

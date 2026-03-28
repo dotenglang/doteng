@@ -1,0 +1,32 @@
+{
+  "name": "llmlang",
+  "version": "1.0.0",
+  "description": "English as a Programming Language — a structured natural language that compiles to any framework via LLM-powered code generation",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "eng": "./bin/eng.js"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "parse": "node bin/eng.js parse",
+    "lint": "node bin/eng.js lint",
+    "build": "node bin/eng.js build"
+  },
+  "keywords": [
+    "eng",
+    "language",
+    "compiler",
+    "llm",
+    "natural-language"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "dotenv": "^17.3.1",
+    "openai": "^6.33.0",
+    "yaml": "^2.4.0"
+  }
+}

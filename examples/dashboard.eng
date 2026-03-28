@@ -1,0 +1,27 @@
+---
+type: page
+name: Dashboard
+extends: "layouts/main.eng"
+route: "/dashboard"
+title: "Dashboard"
+auth: required
+---
+
+Import statsCard from "components/stats-card.eng"
+Import activityFeed from "components/activity-feed.eng"
+
+Fill {pageTitle}:
+  Show "Dashboard" as page heading
+
+Fill {breadcrumbs}:
+  Show breadcrumbs: Home > Dashboard
+
+Fill {body}:
+  Create a grid with 3 columns:
+    Place {statsCard} with title = "Users", value = {totalUsers}, icon = "users"
+    Place {statsCard} with title = "Revenue", value = {totalRevenue}, icon = "dollar"
+    Place {statsCard} with title = "Orders", value = {totalOrders}, icon = "shopping-cart"
+
+  Create a section below with margin top large:
+    Show "Recent Activity" as section heading
+    Place {activityFeed} with items = {recentActivity}

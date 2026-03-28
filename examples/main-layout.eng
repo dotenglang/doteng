@@ -1,0 +1,21 @@
+---
+type: layout
+name: MainLayout
+description: "Primary application layout with sidebar navigation"
+---
+
+Import navbar from "partials/navbar.eng"
+Import sidebar from "partials/sidebar.eng"
+Import footer from "partials/footer.eng"
+
+Create the page wrapper as full viewport height:
+  Place {navbar} at the top
+
+  Create a horizontal layout below the navbar:
+    Place {sidebar} on the left, width 250px
+    Create the main content area, fills remaining width:
+      Slot {pageTitle} here
+      Slot {breadcrumbs} here
+      Slot {body} here
+
+  Place {footer} at the bottom, sticky
