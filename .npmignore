@@ -1,0 +1,12 @@
+tests/
+examples/
+projects/
+eng-vscode/
+.eng-cache/
+dist/
+api_keys.txt
+.env
+.env.example
+.claude/
+.git/
+*.tgz

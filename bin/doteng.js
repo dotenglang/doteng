@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 
 import 'dotenv/config';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { Command } from 'commander';
 import { parseCommand, lintCommand, buildCommand, initCommand } from '../src/cli/commands.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
 
 const program = new Command();
 
 program
-  .name('eng')
-  .description('English as a Programming Language — CLI tool')
-  .version('1.0.0');
+  .name('doteng')
+  .description('doteng — English as a Programming Language')
+  .version(pkg.version);
 
 program
   .command('parse <file>')

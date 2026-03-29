@@ -1,4 +1,4 @@
-# eng.config.yaml — Default configuration for .eng projects
+# doteng.config.yaml — Default configuration for .eng projects
 project:
   name: "My Application"
   version: "1.0.0"

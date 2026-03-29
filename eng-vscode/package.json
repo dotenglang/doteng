@@ -1,9 +1,9 @@
 {
-  "name": "eng-language",
-  "displayName": "ENG Language Support",
-  "description": "Syntax highlighting for .eng (English as a Programming Language)",
+  "name": "doteng-language",
+  "displayName": "doteng Language Support",
+  "description": "Syntax highlighting for .eng files (doteng — English as a Programming Language)",
   "version": "1.0.0",
-  "publisher": "llmlang",
+  "publisher": "doteng",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -17,7 +17,7 @@
     "languages": [
       {
         "id": "eng",
-        "aliases": ["ENG", "eng", ".eng"],
+        "aliases": ["ENG", "eng", ".eng", "doteng"],
         "extensions": [".eng"],
         "configuration": "./language-configuration.json"
       }

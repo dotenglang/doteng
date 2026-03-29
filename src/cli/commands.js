@@ -192,7 +192,7 @@ export async function buildCommand(dirPath, options) {
   }
 
   // ── Header ──
-  console.log(chalk.blue.bold(`\n  .eng build`));
+  console.log(chalk.blue.bold(`\n  doteng build`));
   console.log(chalk.gray(`  Target: ${chalk.white(target)}  |  Model: ${chalk.white(model)}  |  Files: ${chalk.white(files.length)}  |  Dry run: ${chalk.white(dryRun ? 'yes' : 'no')}`));
   console.log();
 
@@ -985,8 +985,8 @@ export async function initCommand(name, options) {
 
   fs.mkdirSync(projectDir, { recursive: true });
 
-  // eng.config.yaml
-  const config = `# eng.config.yaml
+  // doteng.config.yaml
+  const config = `# doteng.config.yaml
 project:
   name: "${name}"
   version: "1.0.0"
@@ -1011,7 +1011,7 @@ theming:
   danger: "#EF4444"
   info: "#06B6D4"
 `;
-  fs.writeFileSync(path.join(projectDir, 'eng.config.yaml'), config);
+  fs.writeFileSync(path.join(projectDir, 'doteng.config.yaml'), config);
 
   // Example .eng file
   const hello = `---
@@ -1055,7 +1055,7 @@ GOOGLE_API_KEY=
 
   console.log(chalk.green('  Created:'));
   console.log(chalk.gray(`    projects/${name}/`));
-  console.log(chalk.gray(`    ├── eng.config.yaml`));
+  console.log(chalk.gray(`    ├── doteng.config.yaml`));
   console.log(chalk.gray(`    ├── .env.example`));
   console.log(chalk.gray(`    ├── .gitignore`));
   console.log(chalk.gray(`    └── hello.eng`));
@@ -1063,7 +1063,7 @@ GOOGLE_API_KEY=
   console.log(chalk.green(`  Done!`));
   console.log(chalk.gray(`  cd projects/${name}`));
   console.log(chalk.gray(`  cp .env.example .env     # add your API key`));
-  console.log(chalk.gray(`  eng build . --target=react`));
+  console.log(chalk.gray(`  doteng build . --target=react`));
 }
 
 // ═══════════════════════════════════════
@@ -1088,13 +1088,13 @@ function findEngFiles(dir) {
 }
 
 /**
- * Load eng.config.yaml from the project directory (walk up from resolved path).
+ * Load doteng.config.yaml from the project directory (walk up from resolved path).
  */
 function loadConfig(startPath) {
   let dir = fs.statSync(startPath).isFile() ? path.dirname(startPath) : startPath;
 
   for (let i = 0; i < 10; i++) {
-    const configPath = path.join(dir, 'eng.config.yaml');
+    const configPath = path.join(dir, 'doteng.config.yaml');
     if (fs.existsSync(configPath)) {
       try {
         const raw = fs.readFileSync(configPath, 'utf-8');

@@ -1,4 +1,4 @@
-# eng-lang
+# doteng
 
 **English as a Programming Language**
 
@@ -34,7 +34,7 @@ Create a card container, padding large, rounded corners, border thin light gray,
   Show {description} as paragraph text, color muted, line height relaxed
 ```
 
-Compile to **React** (`eng build . --target=react`):
+Compile to **React** (`doteng build . --target=react`):
 
 ```jsx
 import React from 'react';
@@ -61,7 +61,7 @@ export default function FeatureCard({ icon, title, description }) {
 }
 ```
 
-Same file compiled to **Laravel Blade** (`eng build . --target=laravel-blade`):
+Same file compiled to **Laravel Blade** (`doteng build . --target=laravel-blade`):
 
 ```blade
 <article class="p-6 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-all duration-200">
@@ -96,19 +96,19 @@ One source file. Multiple frameworks. Real, production-ready output.
 
 ```bash
 # Install globally
-npm install -g eng-lang
+npm install -g doteng
 
 # Create a new project
-eng init my-app
+doteng init my-app
 cd projects/my-app
 
 # Add your API key (or use --cli for free with Claude Code Max plan)
 cp .env.example .env
 
 # Build and preview
-eng build . --target=react --serve
-eng build . --target=html --serve
-eng build . --target=laravel-blade --serve
+doteng build . --target=react --serve
+doteng build . --target=html --serve
+doteng build . --target=laravel-blade --serve
 ```
 
 ### Free builds with Claude Code CLI
@@ -116,7 +116,7 @@ eng build . --target=laravel-blade --serve
 If you have [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed with a Max subscription, use `--cli` to compile without API costs:
 
 ```bash
-eng build . --target=react --cli --serve
+doteng build . --target=react --cli --serve
 ```
 
 ---
@@ -125,10 +125,10 @@ eng build . --target=react --cli --serve
 
 | Command | Description |
 |---------|-------------|
-| `eng init <name>` | Scaffold a new `.eng` project |
-| `eng parse <file>` | Parse a `.eng` file and output the JSON AST |
-| `eng lint [dir]` | Validate all `.eng` files in a directory |
-| `eng build [dir]` | Compile `.eng` files to target framework |
+| `doteng init <name>` | Scaffold a new `.eng` project |
+| `doteng parse <file>` | Parse a `.eng` file and output the JSON AST |
+| `doteng lint [dir]` | Validate all `.eng` files in a directory |
+| `doteng build [dir]` | Compile `.eng` files to target framework |
 
 ### Build Flags
 
@@ -168,16 +168,7 @@ Vue, Svelte, Next.js, Angular, and more targets are planned. See the [Language S
 
 ## How It Works
 
-```
-  .eng files          Parser            LLM Compiler         Output
- ┌──────────┐    ┌──────────────┐    ┌───────────────┐    ┌──────────┐
- │  Write    │    │  Lexer →     │    │  AST + target │    │  React   │
- │  English  │ →  │  Parser →    │ →  │  + theme →    │ →  │  Blade   │
- │  code     │    │  Validator   │    │  LLM API call │    │  HTML    │
- └──────────┘    └──────────────┘    └───────────────┘    └──────────┘
-                  Deterministic        Claude / GPT /       Ready to
-                  JSON AST             Gemini / CLI         run code
-```
+![English-to-Code LLM Compilation Pipeline](assets/pipeline.png)
 
 1. **Parse** — The lexer tokenizes `.eng` files, the parser builds a deterministic JSON AST. Same file always produces the same AST.
 2. **Compile** — The AST + target framework + theme config are sent to an LLM with framework-specific instructions. The LLM generates real code.
@@ -205,7 +196,7 @@ See [LANGUAGE_SPEC.md](LANGUAGE_SPEC.md) for the complete grammar specification,
 
 ```
 my-app/
-├── eng.config.yaml      # Project config (target, theme, API settings)
+├── doteng.config.yaml    # Project config (target, theme, API settings)
 ├── .env                  # API keys
 ├── hello.eng             # Your .eng files (organize however you want)
 └── dist/                 # Compiled output
@@ -223,7 +214,7 @@ No forced directory structure — put `.eng` files wherever you want. The frontm
 Syntax highlighting for `.eng` files is available in the `eng-vscode/` directory. Install it locally:
 
 ```bash
-cp -r eng-vscode ~/.vscode/extensions/eng-language
+cp -r eng-vscode ~/.vscode/extensions/doteng-language
 ```
 
 Then reload VS Code. Provides keyword highlighting, variable coloring, comment toggling, and frontmatter support.
