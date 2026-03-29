@@ -315,6 +315,7 @@ export async function buildCommand(dirPath, options) {
   let skipped = 0;
   let errors = 0;
   const compileTimes = [];
+  const isCli = model === 'cli';
 
   for (let i = 0; i < ordered.length; i++) {
     const { file, ast } = ordered[i];
@@ -324,7 +325,7 @@ export async function buildCommand(dirPath, options) {
     try {
       const context = buildContext(ast, astMap, nameMap, target);
 
-      // Spinner with time estimate
+      // Progress display
       let spinnerText = `${chalk.white(relative)} → ${chalk.gray(model)}`;
       if (compileTimes.length > 0 && !dryRun) {
         const avgTime = compileTimes.reduce((a, b) => a + b, 0) / compileTimes.length;
@@ -334,7 +335,14 @@ export async function buildCommand(dirPath, options) {
       spinnerText += chalk.dim(`  [${i + 1}/${ordered.length}]`);
 
       const startTime = Date.now();
-      if (!dryRun) spinner.start(spinnerText);
+
+      if (!dryRun && isCli) {
+        // CLI mode: static line so stderr from claude can flow freely
+        console.log(chalk.cyan(`    ◌ ${relative}`) + chalk.dim(` → compiling via CLI  [${i + 1}/${ordered.length}]`));
+      } else if (!dryRun) {
+        // API mode: animated spinner
+        spinner.start(spinnerText);
+      }
 
       const result = await compiler.compile(ast, context);
 
@@ -343,15 +351,23 @@ export async function buildCommand(dirPath, options) {
 
       if (result.cached) {
         const outputPaths = result.files.map(f => f.path).join(', ');
-        spinner.stop(chalk.gray(`    ⊙ ${relative} → ${outputPaths} ${chalk.dim('(cached)')}`));
+        if (isCli) {
+          console.log(chalk.gray(`    ⊙ ${relative} → ${outputPaths} ${chalk.dim('(cached)')}`));
+        } else {
+          spinner.stop(chalk.gray(`    ⊙ ${relative} → ${outputPaths} ${chalk.dim('(cached)')}`));
+        }
         skipped++;
       } else if (result.dryRun) {
         const outputPaths = result.files.map(f => f.path).join(', ');
         console.log(chalk.cyan(`    ○ ${relative} → ${outputPaths} ${chalk.dim('(dry run)')}`));
       } else {
         const outputPaths = result.files.map(f => f.path).join(', ');
-        const tokenInfo = result.usage ? chalk.dim(` (${formatDuration(elapsed)}, ${result.usage.input + result.usage.output} tokens)`) : '';
-        spinner.stop(chalk.green(`    ✓ ${relative}`) + chalk.gray(` → ${outputPaths}`) + tokenInfo);
+        const tokenInfo = chalk.dim(` (${formatDuration(elapsed)}${result.usage && (result.usage.input + result.usage.output) > 0 ? `, ${result.usage.input + result.usage.output} tokens` : ''})`);
+        if (isCli) {
+          console.log(chalk.green(`    ✓ ${relative}`) + chalk.gray(` → ${outputPaths}`) + tokenInfo);
+        } else {
+          spinner.stop(chalk.green(`    ✓ ${relative}`) + chalk.gray(` → ${outputPaths}`) + tokenInfo);
+        }
       }
 
       if (!dryRun) {
@@ -360,7 +376,11 @@ export async function buildCommand(dirPath, options) {
 
       compiled++;
     } catch (err) {
-      spinner.stop(chalk.red(`    ✗ ${relative} — ${err.message}`));
+      if (isCli) {
+        console.log(chalk.red(`    ✗ ${relative} — ${err.message}`));
+      } else {
+        spinner.stop(chalk.red(`    ✗ ${relative} — ${err.message}`));
+      }
       errors++;
     }
   }

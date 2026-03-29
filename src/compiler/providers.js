@@ -173,16 +173,14 @@ const PROVIDERS = [
         const child = spawn('claude', ['-p', '--output-format', 'text'], {
           env: cliEnv,
           shell: true,
-          stdio: ['pipe', 'pipe', 'pipe'],
+          stdio: ['pipe', 'pipe', 'inherit'],  // stderr goes to terminal for live progress
         });
 
         let stdout = '';
-        let stderr = '';
         child.stdout.on('data', d => { stdout += d; });
-        child.stderr.on('data', d => { stderr += d; });
 
         child.on('close', code => {
-          if (code !== 0) reject(new Error(`CLI exited with code ${code}: ${stderr.slice(0, 200)}`));
+          if (code !== 0) reject(new Error(`CLI exited with code ${code}`));
           else resolve({ text: stdout, usage: { input: 0, output: 0 } });
         });
 
