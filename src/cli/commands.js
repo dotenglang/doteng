@@ -1,11 +1,26 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { execSync, spawn } from 'child_process';
 import chalk from 'chalk';
 import { parse as parseYaml } from 'yaml';
 import { parseEngFile } from '../parser/parser.js';
 import { Validator } from '../parser/validator.js';
 import { Compiler, TARGET_CONFIG } from '../compiler/compiler.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+const TEMPLATES_DIR = path.join(PACKAGE_ROOT, 'templates', 'init');
+
+function readTemplate(relativePath, replacements = {}) {
+  const templatePath = path.join(TEMPLATES_DIR, relativePath);
+  let content = fs.readFileSync(templatePath, 'utf-8');
+  for (const [key, value] of Object.entries(replacements)) {
+    content = content.replaceAll(`{{${key}}}`, value);
+  }
+  return content;
+}
 
 // ── parse command ──
 
@@ -123,15 +138,18 @@ class Spinner {
     this.current = 0;
     this.interval = null;
     this.text = '';
+    this.startedAt = null;
   }
 
   start(text) {
     this.text = text;
     this.current = 0;
+    this.startedAt = Date.now();
     if (process.stdout.isTTY) {
       this.interval = setInterval(() => {
         const frame = this.frames[this.current % this.frames.length];
-        process.stdout.write(`\r  ${chalk.cyan(frame)} ${this.text}`);
+        const elapsed = formatDuration(Date.now() - this.startedAt);
+        process.stdout.write(`\r  ${chalk.cyan(frame)} ${this.text} ${chalk.dim(`(${elapsed})`)}`);
         this.current++;
       }, 80);
     } else {
@@ -156,8 +174,11 @@ class Spinner {
 }
 
 function formatDuration(ms) {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  const mins = Math.floor(ms / 60000);
+  const secs = Math.round((ms % 60000) / 1000);
+  return `${mins}m ${secs}s`;
 }
 
 // ── build command ──
@@ -192,8 +213,11 @@ export async function buildCommand(dirPath, options) {
   }
 
   // ── Header ──
+  const buildStartTime = Date.now();
+  const startTimeStr = new Date().toLocaleTimeString();
   console.log(chalk.blue.bold(`\n  doteng build`));
   console.log(chalk.gray(`  Target: ${chalk.white(target)}  |  Model: ${chalk.white(model)}  |  Files: ${chalk.white(files.length)}  |  Dry run: ${chalk.white(dryRun ? 'yes' : 'no')}`));
+  console.log(chalk.gray(`  Started at ${chalk.white(startTimeStr)}`));
   console.log();
 
   const spinner = new Spinner();
@@ -250,7 +274,7 @@ export async function buildCommand(dirPath, options) {
   console.log();
 
   // ── Phase 2: Resolve dependencies ──
-  console.log(chalk.blue('  → Phase 2: Resolving dependency order...'));
+  console.log(chalk.blue('  → Phase 2: Resolving dependency order...') + chalk.dim(` (${formatDuration(Date.now() - buildStartTime)})`));
   const ordered = resolveBuildOrder(astMap);
   const typeLabel = { fragment: 'fragments', component: 'components', modal: 'modals', layout: 'layouts', page: 'pages' };
   const typeCounts = {};
@@ -263,7 +287,7 @@ export async function buildCommand(dirPath, options) {
   console.log();
 
   // ── Phase 3: Initialize compiler ──
-  console.log(chalk.blue('  → Phase 3: Initializing compiler...'));
+  console.log(chalk.blue('  → Phase 3: Initializing compiler...') + chalk.dim(` (${formatDuration(Date.now() - buildStartTime)})`));
   let compiler;
   try {
     compiler = new Compiler({
@@ -286,7 +310,7 @@ export async function buildCommand(dirPath, options) {
   console.log();
 
   // ── Phase 4: Compile ──
-  console.log(chalk.blue(`  → Phase 4: Compiling to ${chalk.white(TARGET_CONFIG[target].name)}...`));
+  console.log(chalk.blue(`  → Phase 4: Compiling to ${chalk.white(TARGET_CONFIG[target].name)}...`) + chalk.dim(` (${formatDuration(Date.now() - buildStartTime)})`));
   let compiled = 0;
   let skipped = 0;
   let errors = 0;
@@ -342,10 +366,12 @@ export async function buildCommand(dirPath, options) {
   }
 
   // ── Phase 5: Summary ──
-  const totalTime = compileTimes.reduce((a, b) => a + b, 0);
+  const totalWallTime = Date.now() - buildStartTime;
+  const finishTimeStr = new Date().toLocaleTimeString();
   console.log();
   console.log(chalk.bold(`  ${'─'.repeat(44)}`));
-  console.log(chalk.bold(`  Build complete`) + (totalTime > 0 ? chalk.gray(` in ${formatDuration(totalTime)}`) : ''));
+  console.log(chalk.bold(`  Build complete`) + chalk.gray(` in ${formatDuration(totalWallTime)}`));
+  console.log(chalk.gray(`  Finished at ${chalk.white(finishTimeStr)}`));
   console.log(chalk.gray(`  Compiled: ${chalk.green(compiled)}  Cached: ${chalk.gray(skipped)}  Errors: ${errors > 0 ? chalk.red(errors) : chalk.gray(0)}`));
 
   if (!dryRun && (compiler.totalInputTokens > 0 || compiler.totalOutputTokens > 0)) {
@@ -983,82 +1009,36 @@ export async function initCommand(name, options) {
 
   console.log(chalk.blue(`Creating new .eng project: projects/${name}\n`));
 
-  fs.mkdirSync(projectDir, { recursive: true });
+  // Create directories
+  fs.mkdirSync(path.join(projectDir, 'examples'), { recursive: true });
 
-  // doteng.config.yaml
-  const config = `# doteng.config.yaml
-project:
-  name: "${name}"
-  version: "1.0.0"
+  // Write templated files
+  fs.writeFileSync(path.join(projectDir, 'doteng.config.yaml'), readTemplate('doteng.config.yaml', { name }));
+  fs.writeFileSync(path.join(projectDir, 'hello.eng'), readTemplate('hello.eng'));
+  fs.writeFileSync(path.join(projectDir, '.env.example'), readTemplate('.env.example'));
+  fs.writeFileSync(path.join(projectDir, '.gitignore'), readTemplate('gitignore'));
+  fs.writeFileSync(path.join(projectDir, 'AGENTS.md'), readTemplate('AGENTS.md'));
 
-compiler:
-  target: "react"
-  llm:
-    model: "claude-sonnet-4-20250514"
-    api_key_env: "ANTHROPIC_API_KEY"
-  output:
-    directory: "./dist"
-    clean_before_build: true
-  css:
-    framework: "tailwind"
-    version: "3"
+  // Copy example files
+  const examplesSource = path.join(TEMPLATES_DIR, 'examples');
+  const exampleFiles = fs.readdirSync(examplesSource).filter(f => f.endsWith('.eng')).sort();
+  for (const file of exampleFiles) {
+    fs.writeFileSync(path.join(projectDir, 'examples', file), readTemplate(path.join('examples', file)));
+  }
 
-theming:
-  primary: "#3B82F6"
-  secondary: "#6366F1"
-  success: "#10B981"
-  warning: "#F59E0B"
-  danger: "#EF4444"
-  info: "#06B6D4"
-`;
-  fs.writeFileSync(path.join(projectDir, 'doteng.config.yaml'), config);
-
-  // Example .eng file
-  const hello = `---
-type: component
-name: HelloWorld
-description: "A simple welcome card"
-props:
-  - name: title
-    type: string
-    default: "Hello from .eng"
-  - name: message
-    type: string
-    default: "Write English. Get code."
----
-
-Create a centered card with padding large, rounded corners, subtle shadow:
-  Show {title} as a heading, font size 2rem
-  Show {message} as paragraph text, muted color
-  Create a button "Get Started" style primary:
-    On click: Navigate to "/docs"
-`;
-  fs.writeFileSync(path.join(projectDir, 'hello.eng'), hello);
-
-  // .env.example
-  const envExample = `# API keys for .eng compiler
-# Copy this file to .env and fill in your key.
-# Which key is needed depends on your --model flag.
-
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-GOOGLE_API_KEY=
-`;
-  fs.writeFileSync(path.join(projectDir, '.env.example'), envExample);
-
-  // .gitignore
-  const gitignore = `dist/
-.eng-cache/
-.env
-`;
-  fs.writeFileSync(path.join(projectDir, '.gitignore'), gitignore);
-
+  // Print output tree
   console.log(chalk.green('  Created:'));
   console.log(chalk.gray(`    projects/${name}/`));
   console.log(chalk.gray(`    ├── doteng.config.yaml`));
   console.log(chalk.gray(`    ├── .env.example`));
   console.log(chalk.gray(`    ├── .gitignore`));
-  console.log(chalk.gray(`    └── hello.eng`));
+  console.log(chalk.gray(`    ├── AGENTS.md`));
+  console.log(chalk.gray(`    ├── hello.eng`));
+  console.log(chalk.gray(`    └── examples/`));
+  for (let i = 0; i < exampleFiles.length; i++) {
+    const prefix = i === exampleFiles.length - 1 ? '└──' : '├──';
+    console.log(chalk.gray(`        ${prefix} ${exampleFiles[i]}`));
+  }
   console.log();
   console.log(chalk.green(`  Done!`));
   console.log(chalk.gray(`  cd projects/${name}`));

@@ -160,29 +160,46 @@ const PROVIDERS = [
       return null; // no SDK client needed
     },
     async call(client, { model, system, user, maxTokens }) {
-      const { execSync } = await import('child_process');
+      const { spawn } = await import('child_process');
 
       // Combine system + user into a single prompt
       const prompt = `${system}\n\n---\n\n${user}`;
 
-      // Pipe prompt to claude CLI via stdin
       // Strip ANTHROPIC_API_KEY from env so CLI uses Max subscription auth, not API key
       const cliEnv = { ...process.env };
       delete cliEnv.ANTHROPIC_API_KEY;
 
-      const result = execSync('claude -p --output-format text', {
-        input: prompt,
-        env: cliEnv,
-        maxBuffer: 10 * 1024 * 1024, // 10MB for large code output
-        timeout: 120000, // 2 minutes per file
-        stdio: ['pipe', 'pipe', 'pipe'],
-        shell: true,
-      });
+      return new Promise((resolve, reject) => {
+        const child = spawn('claude', ['-p', '--output-format', 'text'], {
+          env: cliEnv,
+          shell: true,
+          stdio: ['pipe', 'pipe', 'pipe'],
+        });
 
-      return {
-        text: result.toString('utf-8'),
-        usage: { input: 0, output: 0 },
-      };
+        let stdout = '';
+        let stderr = '';
+        child.stdout.on('data', d => { stdout += d; });
+        child.stderr.on('data', d => { stderr += d; });
+
+        child.on('close', code => {
+          if (code !== 0) reject(new Error(`CLI exited with code ${code}: ${stderr.slice(0, 200)}`));
+          else resolve({ text: stdout, usage: { input: 0, output: 0 } });
+        });
+
+        child.on('error', err => reject(new Error(`Failed to start claude CLI: ${err.message}`)));
+
+        // Write prompt to stdin and close
+        child.stdin.write(prompt);
+        child.stdin.end();
+
+        // Timeout after 3 minutes
+        const timer = setTimeout(() => {
+          child.kill();
+          reject(new Error('CLI timeout — no response after 180 seconds'));
+        }, 180000);
+
+        child.on('close', () => clearTimeout(timer));
+      });
     },
   },
 ];
