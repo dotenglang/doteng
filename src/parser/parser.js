@@ -203,6 +203,9 @@ export class Parser {
         continue;
       }
 
+      // Safety: track position to prevent infinite loops
+      const posBefore = this.pos;
+
       // Parse a statement based on the keyword
       if (token.type === TokenType.KEYWORD) {
         const node = this.parseStatement(minIndent);
@@ -211,6 +214,11 @@ export class Parser {
         // Non-keyword line — treat as text/description
         const node = this.parseTextStatement();
         if (node) nodes.push(node);
+      }
+
+      // Safety: if parser didn't advance, force skip to prevent infinite loop
+      if (this.pos === posBefore) {
+        this.advance();
       }
     }
 
@@ -842,12 +850,12 @@ export class Parser {
 
   parseStore(currentIndent) {
     this.advance();
-    const varToken = this.match(TokenType.VARIABLE);
-    const rest = this.collectLineAsString();
+    const name = this.collectLineAsString();
+    const children = this.consumeBlock(currentIndent);
     return {
       type: 'Store',
-      variable: varToken?.value,
-      modifier: rest,
+      name: name,
+      children,
       line: this.peek()?.line,
     };
   }
