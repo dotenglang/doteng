@@ -160,7 +160,7 @@ const PROVIDERS = [
       return null; // no SDK client needed
     },
     async call(client, { model, system, user, maxTokens }) {
-      const { spawn } = await import('child_process');
+      const { execSync } = await import('child_process');
 
       // Combine system + user into a single prompt
       const prompt = `${system}\n\n---\n\n${user}`;
@@ -169,35 +169,18 @@ const PROVIDERS = [
       const cliEnv = { ...process.env };
       delete cliEnv.ANTHROPIC_API_KEY;
 
-      return new Promise((resolve, reject) => {
-        const child = spawn('claude', ['-p', '--output-format', 'text'], {
-          env: cliEnv,
-          shell: true,
-          stdio: ['pipe', 'pipe', 'inherit'],  // stderr goes to terminal for live progress
-        });
-
-        let stdout = '';
-        child.stdout.on('data', d => { stdout += d; });
-
-        child.on('close', code => {
-          if (code !== 0) reject(new Error(`CLI exited with code ${code}`));
-          else resolve({ text: stdout, usage: { input: 0, output: 0 } });
-        });
-
-        child.on('error', err => reject(new Error(`Failed to start claude CLI: ${err.message}`)));
-
-        // Write prompt to stdin and close
-        child.stdin.write(prompt);
-        child.stdin.end();
-
-        // Timeout after 3 minutes
-        const timer = setTimeout(() => {
-          child.kill();
-          reject(new Error('CLI timeout — no response after 180 seconds'));
-        }, 180000);
-
-        child.on('close', () => clearTimeout(timer));
+      const result = execSync('claude -p --output-format text', {
+        input: prompt,
+        env: cliEnv,
+        maxBuffer: 10 * 1024 * 1024,
+        timeout: 180000,
+        shell: true,
       });
+
+      return {
+        text: result.toString('utf-8'),
+        usage: { input: 0, output: 0 },
+      };
     },
   },
 ];
