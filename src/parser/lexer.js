@@ -206,15 +206,21 @@ export class Lexer {
         return; // Rest of line is comment
       }
 
-      // Variable: {something}
+      // Variable: {something} — handle nested braces like { email: {email} }
       if (ch === '{') {
         const end = text.indexOf('}', pos);
         if (end === -1) {
           this.error(`Unterminated variable reference at column ${startPos + pos + 1}`);
         }
-        const varName = text.slice(pos + 1, end);
+        const varName = text.slice(pos + 1, end).trim();
         this.tokens.push(new Token(TokenType.VARIABLE, varName, this.line, startPos + pos + 1));
         pos = end + 1;
+        continue;
+      }
+
+      // Stray closing brace — skip it (from constructs like { key: {var} })
+      if (ch === '}') {
+        pos++;
         continue;
       }
 

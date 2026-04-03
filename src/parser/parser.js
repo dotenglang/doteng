@@ -212,7 +212,7 @@ export class Parser {
         if (node) nodes.push(node);
       } else {
         // Non-keyword line — treat as text/description
-        const node = this.parseTextStatement();
+        const node = this.parseTextStatement(minIndent);
         if (node) nodes.push(node);
       }
 
@@ -950,14 +950,16 @@ export class Parser {
   parseEmit(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Emit', raw: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Emit', raw: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseToggle(currentIndent) {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Toggle', variable: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Toggle', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseOpen(currentIndent) {
@@ -972,13 +974,15 @@ export class Parser {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Close', variable: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Close', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parsePrevent(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Prevent', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Prevent', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseFill(currentIndent) {
@@ -993,14 +997,16 @@ export class Parser {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Slot', name: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Slot', name: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseHide(currentIndent) {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Hide', variable: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Hide', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseList(currentIndent) {
@@ -1023,7 +1029,8 @@ export class Parser {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Image', variable: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Image', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseLink(currentIndent) {
@@ -1036,7 +1043,8 @@ export class Parser {
   parseIcon(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Icon', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Icon', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseInput(currentIndent) {
@@ -1081,19 +1089,22 @@ export class Parser {
   parseRadio(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Radio', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Radio', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseUpload(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Upload', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Upload', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseDatePicker(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'DatePicker', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'DatePicker', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseStyle(currentIndent) {
@@ -1148,7 +1159,8 @@ export class Parser {
   parseDebug(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Debug', expression: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Debug', expression: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseTodo(currentIndent) {
@@ -1162,14 +1174,16 @@ export class Parser {
   parseValidate(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Validate', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Validate', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseMarkdown(currentIndent) {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Markdown', variable: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Markdown', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseWatch(currentIndent) {
@@ -1191,19 +1205,23 @@ export class Parser {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
     const rest = this.collectLineAsString();
-    return { type: 'Clear', variable: varToken?.value, modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Clear', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseCall(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Call', target: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Call', target: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseRefresh(currentIndent) {
     this.advance();
     const varToken = this.match(TokenType.VARIABLE);
-    return { type: 'Refresh', variable: varToken?.value, line: this.peek()?.line };
+    const rest = this.collectLineAsString();
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Refresh', variable: varToken?.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseDelete(currentIndent) {
@@ -1216,7 +1234,8 @@ export class Parser {
   parseUse(currentIndent) {
     this.advance();
     const rest = this.collectLineAsString();
-    return { type: 'Use', modifier: rest, line: this.peek()?.line };
+    const children = this.consumeBlock(currentIndent);
+    return { type: 'Use', modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
   parseGenericKeyword(currentIndent) {
@@ -1226,10 +1245,10 @@ export class Parser {
     return { type: kw.value, modifier: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 
-  parseTextStatement() {
+  parseTextStatement(currentIndent = 0) {
     const rest = this.collectLineAsString();
     if (!rest) return null;
-    const children = this.consumeBlock(0);
+    const children = this.consumeBlock(currentIndent);
     return { type: 'Text', content: rest, children: children.length > 0 ? children : undefined, line: this.peek()?.line };
   }
 }
