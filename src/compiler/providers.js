@@ -162,8 +162,10 @@ const PROVIDERS = [
     async call(client, { model, system, user, maxTokens }) {
       const { execSync } = await import('child_process');
 
-      // Combine system + user into a single prompt
-      const prompt = `${system}\n\n---\n\n${user}`;
+      // Combine system + user into a single prompt.
+      // Prepend /ui-ux-pro-max to activate the UI/UX design intelligence skill
+      // (covers accessibility, touch targets, responsive, typography, color contrast, etc.)
+      const prompt = `/ui-ux-pro-max\n\n${system}\n\n---\n\n${user}`;
 
       // Strip ANTHROPIC_API_KEY from env so CLI uses Max subscription auth, not API key
       const cliEnv = { ...process.env };
