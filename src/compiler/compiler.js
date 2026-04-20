@@ -185,13 +185,20 @@ ${JSON.stringify(context.layoutAst, null, 2)}
   if (context.importedAsts && context.importedAsts.length > 0) {
     prompt += `
 
-### Imported Component ASTs (for context — generate correct prop passing)`;
+### Imported Component Signatures (for correct prop passing and naming — bodies omitted to save tokens)`;
     for (const imp of context.importedAsts) {
+      const signature = {
+        name: imp.frontmatter?.name || null,
+        type: imp.frontmatter?.type || null,
+        description: imp.frontmatter?.description || null,
+        props: imp.frontmatter?.props || [],
+        importedAs: imp._importName || null,
+      };
       prompt += `
 
-#### ${imp.frontmatter?.name || 'Unknown'} (imported as "${imp._importName || 'unknown'}")
+#### ${signature.name || 'Unknown'} (imported as "${signature.importedAs}")
 \`\`\`json
-${JSON.stringify(imp, null, 2)}
+${JSON.stringify(signature, null, 2)}
 \`\`\``;
     }
   }

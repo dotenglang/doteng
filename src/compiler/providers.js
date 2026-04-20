@@ -173,7 +173,7 @@ const PROVIDERS = [
         input: prompt,
         env: cliEnv,
         maxBuffer: 10 * 1024 * 1024,
-        timeout: 180000,
+        timeout: 480000,
         shell: true,
       });
 
