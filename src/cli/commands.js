@@ -290,12 +290,17 @@ export async function buildCommand(dirPath, options) {
   console.log(chalk.blue('  → Phase 3: Initializing compiler...') + chalk.dim(` (${formatDuration(Date.now() - buildStartTime)})`));
   let compiler;
   try {
+    const configuredOutput = config.compiler?.output?.directory || './dist';
+    const projectRoot = config._projectRoot || process.cwd();
+    const outputDir = path.isAbsolute(configuredOutput)
+      ? configuredOutput
+      : path.resolve(projectRoot, configuredOutput);
     compiler = new Compiler({
       ...config,
       target,
       model,
       dryRun,
-      outputDir: config.compiler?.output?.directory || './dist',
+      outputDir,
     });
     console.log(chalk.gray(`    Provider: ${compiler.modelLabel}`));
   } catch (err) {
@@ -1098,9 +1103,11 @@ function loadConfig(startPath) {
     if (fs.existsSync(configPath)) {
       try {
         const raw = fs.readFileSync(configPath, 'utf-8');
-        return parseYaml(raw) || {};
+        const config = parseYaml(raw) || {};
+        config._projectRoot = dir;
+        return config;
       } catch {
-        return {};
+        return { _projectRoot: dir };
       }
     }
     const parent = path.dirname(dir);

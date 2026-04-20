@@ -1,6 +1,6 @@
 {
   "name": "@dotenglang/doteng",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "doteng — English as a Programming Language. Compile structured English to React, Laravel, HTML and more.",
   "type": "module",
   "main": "src/index.js",
